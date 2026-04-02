@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COA11e — Quiz theo Chương</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#07080d;--surface:#0f1117;--surface2:#161820;--surface3:#1e2028;
+  --accent:#6ee7b7;--accent2:#34d399;--purple:#a78bfa;--blue:#60a5fa;
+  --red:#f87171;--red-dim:rgba(248,113,113,0.12);--yellow:#fbbf24;
+  --green:#6ee7b7;--green-dim:rgba(110,231,183,0.12);
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#e8eaf0;--text2:#8890a8;--text3:#454860;
+  --mono:'JetBrains Mono',monospace;--sans:'Sora',sans-serif;
+  --r:10px;--r2:16px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(110,231,183,0.06),transparent);pointer-events:none;z-index:0;}
+
+.wrap{position:relative;z-index:1;max-width:860px;margin:0 auto;padding:0 16px 80px;}
+
+/* HEADER */
+header{padding:52px 0 36px;text-align:center;}
+.chip{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);background:rgba(110,231,183,0.08);border:1px solid rgba(110,231,183,0.2);border-radius:4px;padding:4px 14px;margin-bottom:16px;}
+h1{font-size:clamp(26px,5vw,42px);font-weight:600;letter-spacing:-1.5px;line-height:1.15;}
+h1 em{font-style:normal;color:var(--accent);}
+.hdr-sub{font-size:14px;color:var(--text2);margin-top:10px;font-weight:300;}
+
+/* CHAPTER GRID */
+#home-screen{}
+.ch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:28px;}
+.ch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px 16px 16px;cursor:pointer;transition:all 0.18s;position:relative;overflow:hidden;}
+.ch-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(110,231,183,0.04),transparent);opacity:0;transition:opacity 0.2s;}
+.ch-card:hover{border-color:rgba(110,231,183,0.35);transform:translateY(-2px);}
+.ch-card:hover::before{opacity:1;}
+.ch-num{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:2px;margin-bottom:6px;}
+.ch-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.45;}
+.ch-count{font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--mono);}
+.ch-done{position:absolute;top:10px;right:12px;width:22px;height:22px;border-radius:50%;background:var(--green-dim);border:1px solid rgba(110,231,183,0.3);display:none;align-items:center;justify-content:center;font-size:10px;color:var(--accent);}
+.ch-card.completed .ch-done{display:flex;}
+.ch-card.completed{border-color:rgba(110,231,183,0.25);background:rgba(110,231,183,0.04);}
+
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text);font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.18s;}
+.btn:hover{background:var(--surface2);border-color:rgba(110,231,183,0.4);}
+.btn-primary{background:var(--accent2);border-color:var(--accent2);color:#022c22;font-weight:600;}
+.btn-primary:hover{background:var(--accent);border-color:var(--accent);color:#022c22;}
+.btn-sm{padding:8px 16px;font-size:13px;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+
+/* QUIZ */
+#quiz-screen{display:none;}
+.qhdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;}
+.qhdr-title{font-size:15px;font-weight:600;color:var(--text);}
+.qhdr-sub{font-size:12px;color:var(--text2);font-family:var(--mono);}
+.prog-track{height:3px;background:var(--surface3);border-radius:2px;margin-bottom:24px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--purple));border-radius:2px;transition:width 0.4s cubic-bezier(.4,0,.2,1);}
+.score-row{display:flex;gap:16px;font-size:12px;font-family:var(--mono);}
+.score-g{color:var(--green);}
+.score-r{color:var(--red);}
+
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:28px 28px 24px;margin-bottom:14px;animation:fadeUp 0.22s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+.q-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;}
+.q-badge{font-family:var(--mono);font-size:11px;padding:3px 10px;border-radius:4px;letter-spacing:1px;}
+.q-num-badge{color:var(--accent);background:rgba(110,231,183,0.1);border:1px solid rgba(110,231,183,0.2);}
+.q-tag-badge{color:var(--purple);background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);}
+.q-multi-badge{color:var(--yellow);background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);}
+.q-text{font-size:16px;font-weight:400;line-height:1.7;color:var(--text);margin-bottom:22px;}
+
+.opts{display:flex;flex-direction:column;gap:9px;}
+.opt{display:flex;align-items:flex-start;gap:14px;padding:13px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);cursor:pointer;transition:all 0.16s;text-align:left;width:100%;color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.55;}
+.opt:hover:not(:disabled){border-color:rgba(110,231,183,0.4);background:rgba(110,231,183,0.05);}
+.opt:disabled{cursor:default;}
+.opt-key{font-family:var(--mono);font-size:11px;font-weight:600;min-width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:var(--surface3);border:1px solid var(--border2);border-radius:5px;color:var(--text2);flex-shrink:0;margin-top:1px;transition:all 0.16s;}
+.opt:hover:not(:disabled) .opt-key{background:var(--accent2);border-color:var(--accent2);color:#022c22;}
+.opt.sel .opt-key,.opt.sel{border-color:rgba(110,231,183,0.4);background:rgba(110,231,183,0.06);}
+.opt.sel .opt-key{background:var(--accent2);border-color:var(--accent2);color:#022c22;}
+.opt.correct{border-color:rgba(110,231,183,0.6);background:var(--green-dim);}
+.opt.correct .opt-key{background:var(--accent2);border-color:var(--accent2);color:#022c22;}
+.opt.wrong{border-color:rgba(248,113,113,0.5);background:var(--red-dim);}
+.opt.wrong .opt-key{background:var(--red);border-color:var(--red);color:#fff;}
+.opt.reveal{border-color:rgba(110,231,183,0.5);background:var(--green-dim);}
+.opt.reveal .opt-key{background:var(--accent2);border-color:var(--accent2);color:#022c22;}
+
+.feedback{display:none;margin-top:12px;padding:12px 16px;border-radius:var(--r);font-size:13px;font-weight:500;border:1px solid;}
+.feedback.ok{background:var(--green-dim);border-color:rgba(110,231,183,0.3);color:var(--accent);}
+.feedback.no{background:var(--red-dim);border-color:rgba(248,113,113,0.3);color:var(--red);}
+
+.nav-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-top:4px;}
+
+/* NUMPAD */
+.numpad-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:20px;margin-bottom:14px;}
+.numpad-label{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-bottom:12px;}
+.numpad{display:flex;flex-wrap:wrap;gap:5px;}
+.np{width:32px;height:32px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-family:var(--mono);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.13s;}
+.np:hover{border-color:rgba(110,231,183,0.4);color:var(--accent);}
+.np.ok{background:rgba(110,231,183,0.12);border-color:rgba(110,231,183,0.3);color:var(--accent);}
+.np.bad{background:rgba(248,113,113,0.12);border-color:rgba(248,113,113,0.3);color:var(--red);}
+.np.cur{background:var(--accent2);border-color:var(--accent2);color:#022c22;}
+
+/* RESULT */
+#result-screen{display:none;}
+.res-hero{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:44px 28px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden;}
+.res-hero::before{content:'';position:absolute;top:-80px;left:50%;transform:translateX(-50%);width:300px;height:200px;background:radial-gradient(ellipse,rgba(110,231,183,0.15),transparent 70%);pointer-events:none;}
+.res-pct{font-family:var(--mono);font-size:68px;font-weight:600;line-height:1;margin-bottom:6px;}
+.res-grade{font-size:18px;font-weight:500;margin-bottom:6px;}
+.res-sub{font-size:13px;color:var(--text2);}
+.res-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;}
+@media(max-width:500px){.res-stats{grid-template-columns:1fr 1fr;}}
+.st-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;}
+.st-n{font-family:var(--mono);font-size:22px;font-weight:600;}
+.st-l{font-size:11px;color:var(--text3);margin-top:3px;}
+
+.wrong-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:24px;margin-bottom:16px;}
+.wrong-section h3{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--red);margin-bottom:18px;}
+.wi{border-top:1px solid var(--border);padding:14px 0;}
+.wi:first-child{border-top:none;}
+.wi-q{font-size:13px;color:var(--text);line-height:1.55;margin-bottom:8px;}
+.wi-tags{display:flex;gap:6px;flex-wrap:wrap;}
+.wi-your{font-size:11px;padding:2px 8px;border-radius:5px;background:var(--red-dim);border:1px solid rgba(248,113,113,0.25);color:var(--red);}
+.wi-ans{font-size:11px;padding:2px 8px;border-radius:5px;background:var(--green-dim);border:1px solid rgba(110,231,183,0.25);color:var(--accent);}
+
+@media(max-width:600px){.q-card{padding:18px 14px;} .nav-bar{padding:12px 14px;} .ch-grid{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="chip">COA 11th Edition</div>
+  <h1>Computer Organization<br>& <em>Architecture</em> Quiz</h1>
+  <p class="hdr-sub">20 chương · Câu hỏi từ slide bài giảng · Luyện tập theo chương</p>
+</header>
+
+<!-- HOME -->
+<div id="home-screen">
+  <div class="ch-grid" id="ch-grid"></div>
+  <div class="btn-row" style="justify-content:center;margin-top:8px;">
+    <button class="btn btn-primary" onclick="startAll()">Làm tất cả các chương →</button>
+    <button class="btn" onclick="startRandom()">🎲 Ngẫu nhiên</button>
+    <button class="btn" id="btn-retry-wrong" style="display:none" onclick="startWrong()">🔁 Ôn câu sai</button>
+  </div>
+</div>
+
+<!-- NUMPAD -->
+<div class="numpad-wrap" id="numpad-wrap" style="display:none">
+  <div class="numpad-label">Điều hướng câu hỏi</div>
+  <div class="numpad" id="numpad"></div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz-screen">
+  <div class="qhdr">
+    <div>
+      <div class="qhdr-title" id="qhdr-title"></div>
+      <div class="qhdr-sub" id="qhdr-sub"></div>
+    </div>
+    <div class="score-row">
+      <span>Đúng: <span class="score-g" id="sc-g">0</span></span>
+      <span>Sai: <span class="score-r" id="sc-r">0</span></span>
+    </div>
+  </div>
+  <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="q-card" id="q-card">
+    <div class="q-meta" id="q-meta"></div>
+    <p class="q-text" id="q-text"></p>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <div class="nav-bar">
+    <div class="btn-row">
+      <button class="btn btn-sm" id="btn-prev" onclick="go(-1)">← Trước</button>
+      <button class="btn btn-sm btn-primary" id="btn-next" onclick="go(1)">Tiếp →</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-sm" onclick="showResult()">Kết quả</button>
+      <button class="btn btn-sm" onclick="backHome()">⌂ Trang chủ</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result-screen">
+  <div class="res-hero">
+    <div class="res-pct" id="res-pct"></div>
+    <div class="res-grade" id="res-grade"></div>
+    <div class="res-sub" id="res-sub"></div>
+  </div>
+  <div class="res-stats">
+    <div class="st-box"><div class="st-n" id="rs-done"></div><div class="st-l">Đã làm</div></div>
+    <div class="st-box"><div class="st-n" style="color:var(--accent)" id="rs-ok"></div><div class="st-l">Đúng</div></div>
+    <div class="st-box"><div class="st-n" style="color:var(--red)" id="rs-bad"></div><div class="st-l">Sai</div></div>
+    <div class="st-box"><div class="st-n" style="color:var(--text3)" id="rs-skip"></div><div class="st-l">Bỏ qua</div></div>
+  </div>
+  <div class="wrong-section" id="wrong-section" style="display:none">
+    <h3>Câu trả lời sai</h3>
+    <div id="wrong-list"></div>
+  </div>
+  <div class="btn-row" style="justify-content:center;margin-top:16px">
+    <button class="btn btn-primary" onclick="backHome()">⌂ Về trang chủ</button>
+    <button class="btn" onclick="retryWrong()">Ôn lại câu sai</button>
+  </div>
+</div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════
+// QUESTION BANK — generated from slide content
+// ═══════════════════════════════════════════════════
+const CHAPTERS = [
+{id:'CH01',title:'Basic Concepts & Computer Evolution',qs:[
+  {q:"What is 'computer architecture'?",opts:["The physical layout of components on a motherboard","Those attributes of a system visible to a programmer that have a direct impact on the logical execution of a program","The operational units and their interconnections that realize a specification","The clock speed and power consumption of a processor"],ans:[1],tag:"Architecture"},
+  {q:"What is 'computer organization'?",opts:["The instruction set and addressing modes of a processor","The attributes visible to the programmer such as the instruction set","The operational units and their interconnections that realize the architectural specifications — hardware details transparent to the programmer","The number of bits used to represent data types"],ans:[2],tag:"Architecture"},
+  {q:"Which of the following is an example of an ARCHITECTURAL attribute?",opts:["Control signals","Interface between the computer and peripherals","The memory technology used","The instruction set and number of bits used to represent data types"],ans:[3],tag:"Architecture"},
+  {q:"Which of the following is an example of an ORGANIZATIONAL attribute?",opts:["The instruction set","Number of bits used to represent numbers","Control signals and the memory technology used","Techniques for addressing memory"],ans:[2],tag:"Architecture"},
+  {q:"What are the four basic functions a computer can perform?",opts:["Fetch, Decode, Execute, Writeback","Data processing, Data storage, Data movement, Control","Input, Processing, Output, Storage","Arithmetic, Logic, Memory, I/O"],ans:[1],tag:"Function"},
+  {q:"What are the four main structural components of a computer?",opts:["CPU, RAM, ROM, I/O","CPU, Main Memory, I/O, System Interconnection","ALU, Control Unit, Registers, Bus","Processor, Cache, Memory, Disk"],ans:[1],tag:"Structure"},
+  {q:"What are the four major structural components of the CPU?",opts:["Registers, Cache, ALU, Bus","Control Unit, ALU, Registers, CPU Interconnection","Instruction Register, Program Counter, MAR, MBR","Fetch unit, Decode unit, Execute unit, Write unit"],ans:[1],tag:"CPU Structure"},
+  {q:"In a multicore computer, what is a 'core'?",opts:["A physical piece of silicon containing multiple processors","An individual processing unit on a processor chip, equivalent in functionality to a CPU","The L1 cache inside a processor","The control unit of the main processor"],ans:[1],tag:"Multicore"},
+  {q:"What is 'cache memory'?",opts:["The main memory of a computer","A smaller, faster memory placed between the processor and main memory to speed up access","A type of non-volatile storage","A register inside the ALU"],ans:[1],tag:"Cache"},
+  {q:"In a memory hierarchy with multiple cache levels, which level is closest to the core?",opts:["L3","L2","L1","Main memory"],ans:[2],tag:"Cache"},
+  {q:"What is the difference between a 'processor' and a 'core'?",opts:["They are identical terms","A processor is a physical piece of silicon that may contain one or more cores; a core is an individual processing unit on that chip","A core is larger than a processor","A processor refers only to the ALU, while a core includes the full CPU"],ans:[1],tag:"Multicore"},
+  {q:"What is 'structure' in the context of describing a computer system?",opts:["The operation of each individual component","The way in which the components are interrelated","The function of the control unit","The binary encoding of instructions"],ans:[1],tag:"Structure"},
+  {q:"What is 'function' in the context of describing a computer system?",opts:["The way in which the components are interrelated","The clock frequency of the processor","The operation of each individual component as part of the structure","The memory addressing scheme"],ans:[2],tag:"Structure"},
+  {q:"What is an 'embedded system'?",opts:["A system running only embedded software (no OS)","A computer system (processor plus software) built into a device to perform a dedicated function — often with real-time constraints","A system with no external I/O devices","A deeply pipelined processor"],ans:[1],tag:"Embedded Systems"},
+  {q:"What is a 'microcontroller'?",opts:["A high-performance multicore processor","A single chip containing the processor, non-volatile program memory (ROM), volatile data memory (RAM), a clock, and an I/O control unit","A processor designed only for floating-point operations","A type of cache memory"],ans:[1],tag:"Embedded Systems"},
+  {q:"What is a 'deeply embedded system'?",opts:["An embedded system with very deep pipelines","A dedicated, single-purpose device using a microcontroller, not programmable once burned into ROM, with no user interaction and extreme resource constraints","An embedded system running a full Linux OS","A system embedded in a data center"],ans:[1],tag:"Embedded Systems"},
+  {q:"ARM architecture is based on which design philosophy?",opts:["CISC (Complex Instruction Set Computer)","VLIW (Very Long Instruction Word)","RISC (Reduced Instruction Set Computer)","Harvard architecture exclusively"],ans:[2],tag:"ARM"},
+  {q:"What does the ARM Cortex-A series target?",opts:["Low-power microcontrollers with no OS","Real-time embedded applications","Application processors for mobile devices that run complex OSes like Linux and Android","Ultra-low-cost 8-bit microcontrollers"],ans:[2],tag:"ARM"},
+  {q:"What is the key difference between the von Neumann and Harvard architectures?",opts:["Von Neumann uses binary; Harvard uses decimal","Von Neumann uses the same memory and buses for both instructions and data; Harvard uses separate buses and memory for instructions and data","Von Neumann has no cache; Harvard has cache","Harvard uses RISC; Von Neumann uses CISC"],ans:[1],tag:"Architecture"},
+  {q:"What is a 'printed circuit board' (PCB)?",opts:["A processor chip","A rigid flat board that holds and interconnects chips and other electronic components via copper pathways etched into the board","A type of non-volatile memory","The bus that connects CPU to RAM"],ans:[1],tag:"Structure"},
+]},
+{id:'CH02',title:'Performance Concepts',qs:[
+  {q:"What technique enables a processor to work on multiple instructions simultaneously by performing different phases of each instruction at the same time?",opts:["Superscalar execution","Pipelining","Branch prediction","Speculative execution"],ans:[1],tag:"Performance"},
+  {q:"What does 'branch prediction' allow a processor to do?",opts:["Execute multiple parallel pipelines","Prefetch correct instructions by predicting which branches will be processed next","Store intermediate results in temporary locations","Reduce the number of logic gates needed"],ans:[1],tag:"Performance"},
+  {q:"What is 'superscalar execution'?",opts:["The ability to execute more than one instruction in every processor clock cycle using multiple parallel pipelines","The ability to execute instructions out of order","A technique for predicting branches","A method of caching instructions"],ans:[0],tag:"Performance"},
+  {q:"What is 'data flow analysis' in processor design?",opts:["Analyzing which memory addresses are most frequently accessed","Analyzing which instructions are dependent on each other's results to create an optimized schedule","Analyzing the flow of data between cache levels","Analyzing I/O data transfer rates"],ans:[1],tag:"Performance"},
+  {q:"Which technique increases the amount of work available for the processor by looking ahead in the instruction code to predict which groups of instructions will be processed?",opts:["Pipelining","Data flow analysis","Speculative execution","Branch prediction"],ans:[3],tag:"Performance"},
+  {q:"What is 'performance balance' in computer design?",opts:["Balancing the number of processors with the memory size","Adjusting organization and architecture to compensate for mismatch among the capabilities of various components","Ensuring all cache levels are the same size","Balancing the power consumption across components"],ans:[1],tag:"Performance"},
+  {q:"What is a key technique for reducing frequency of memory access and improving CPU-memory performance balance?",opts:["Increasing bus width","Incorporating cache structures between processor and main memory","Using faster I/O devices","Increasing the clock rate"],ans:[2],tag:"Performance"},
+  {q:"According to the chapter, what are the three main approaches to increasing processor speed?",opts:["Increase hardware speed, increase cache size and speed, change processor organization","Use RISC, use pipelining, use superscalar","Increase RAM, increase clock rate, use solid state drives","Use multi-core, use hyperthreading, use SIMD"],ans:[0],tag:"Performance"},
+]},
+{id:'CH03',title:'Computer Function & Interconnection',qs:[
+  {q:"Von Neumann architecture is based on three key concepts. Which of the following is NOT one of them?",opts:["Data and instructions are stored in a single read-write memory","Contents of memory are addressable by location","Execution occurs in a parallel fashion","Execution occurs in a sequential fashion (unless explicitly modified)"],ans:[2],tag:"Von Neumann"},
+  {q:"What is the term for a program implemented in hardware by connecting logic components in a desired configuration?",opts:["Software program","Hardwired program","Firmware","Microprogram"],ans:[1],tag:"Von Neumann"},
+  {q:"At the beginning of each instruction cycle, the processor fetches an instruction from memory. Which register holds the address of the instruction to be fetched next?",opts:["Instruction Register (IR)","Memory Address Register (MAR)","Memory Buffer Register (MBR)","Program Counter (PC)"],ans:[3],tag:"Instruction Cycle"},
+  {q:"What does the Memory Address Register (MAR) contain?",opts:["The instruction most recently fetched","The address in memory for the next read or write operation","The data to be written into memory","The result of the most recent ALU operation"],ans:[1],tag:"Registers"},
+  {q:"What does the Memory Buffer Register (MBR) contain?",opts:["Address of the next instruction","The instruction most recently fetched","Data to be written to memory or the last data read","The current program counter value"],ans:[2],tag:"Registers"},
+  {q:"In general, the actions performed during instruction execution fall into four categories. Which of the following is NOT one of them?",opts:["Processor-memory","Processor-I/O","Data processing","Cache management"],ans:[3],tag:"Instruction Cycle"},
+  {q:"What is the key purpose of the Instruction Register (IR)?",opts:["To hold the address of the next instruction","To hold the fetched instruction for decoding","To hold data read from memory","To point to the top of the stack"],ans:[1],tag:"Registers"},
+  {q:"What is an 'instruction cycle'?",opts:["The time it takes to complete one clock tick","The processing required for a single instruction","The total time to execute a program","The time between two consecutive interrupts"],ans:[1],tag:"Instruction Cycle"},
+]},
+{id:'CH04',title:'Memory Hierarchy & Locality',qs:[
+  {q:"What is the 'principle of locality' (also called locality of reference)?",opts:["Memory access time decreases as memory size increases","During program execution, memory references by the processor tend to cluster","All memory locations are accessed with equal frequency","Memory is organized in a strict linear sequence"],ans:[1],tag:"Locality"},
+  {q:"What does 'temporal locality' refer to?",opts:["The tendency to access memory locations whose addresses are near one another","The tendency to reference in the near future those memory units referenced in the recent past","The time delay between memory accesses","The physical proximity of memory chips"],ans:[1],tag:"Locality"},
+  {q:"What does 'spatial locality' refer to?",opts:["The tendency to access the same memory location repeatedly","The geographic location of memory modules","The tendency to reference units of memory whose addresses are near one another","The time between consecutive memory accesses"],ans:[2],tag:"Locality"},
+  {q:"Which of the following is NOT one of the three assertions on which locality is based?",opts:["During any interval, a program references memory locations non-uniformly","The probability that a given memory unit is referenced tends to change slowly over time","The correlation between past and future memory reference patterns tapers off over time","Memory references are always sequential and predictable"],ans:[3],tag:"Locality"},
+  {q:"How is temporal locality typically exploited in cache memory?",opts:["By using larger cache blocks","By keeping recently used instruction and data values in cache memory","By prefetching anticipated data","By organizing cache into multiple levels"],ans:[1],tag:"Cache"},
+  {q:"How is spatial locality generally exploited in cache design?",opts:["By keeping recently used data in cache","By using larger cache blocks and incorporating prefetching","By increasing clock speed","By using write-through policy"],ans:[1],tag:"Cache"},
+  {q:"What is a 'word' in the context of memory organization?",opts:["A fixed number of bits (typically the natural unit of organization of memory)","Any 8-bit data value","The maximum addressable memory location","The size of the largest register"],ans:[0],tag:"Memory"},
+  {q:"Which type of memory access method provides direct access to any memory location?",opts:["Sequential access","Direct access","Random access","Associative access"],ans:[2],tag:"Memory"},
+]},
+{id:'CH05',title:'Cache Memory',qs:[
+  {q:"What is the minimum unit of transfer between cache and main memory called?",opts:["Word","Frame","Block","Line"],ans:[2],tag:"Cache"},
+  {q:"In cache terminology, what is a 'line'?",opts:["The minimum unit of transfer between cache and main memory","A portion of cache memory capable of holding one block","The tag portion used for addressing","A type of memory mapping technique"],ans:[1],tag:"Cache"},
+  {q:"What is a 'tag' in a cache line?",opts:["A portion of a cache line used for addressing purposes","The data stored in the cache line","A bit indicating if the line has been modified","The replacement policy indicator"],ans:[0],tag:"Cache"},
+  {q:"When a cache miss occurs, what is the 'critical word first' technique?",opts:["Loading the most critical instructions first","Requesting the missed word first from memory and sending it to the processor as soon as it arrives","Always loading the first word of the missed block","Prioritizing instruction cache over data cache"],ans:[1],tag:"Cache"},
+  {q:"What is a 'logical cache' (virtual cache)?",opts:["A cache that stores data using main memory physical addresses","A cache that stores data using virtual addresses, allowing the processor to access it directly","A software-implemented cache","A read-only cache"],ans:[1],tag:"Cache"},
+  {q:"What is a 'physical cache'?",opts:["A cache that stores data using virtual addresses","A cache that stores data using main memory physical addresses","A cache on the processor chip","A secondary cache"],ans:[1],tag:"Cache"},
+  {q:"Which of the following is a mapping function used to map main memory blocks into cache lines?",opts:["LIFO","Direct, Associative, and Set-associative","Round-robin","Hash mapping"],ans:[1],tag:"Cache"},
+  {q:"What is the 'write through' cache write policy?",opts:["Data is written only to cache and memory is updated only when cache line is replaced","All write operations are made to main memory as well as to the cache","Data is written only to cache","Data is written to a write buffer first"],ans:[1],tag:"Cache"},
+  {q:"In a direct mapped cache, how many unique cache lines can a specific main memory block map to?",opts:["Any line — multiple options","Only two lines","Exactly one unique line","All lines equally"],ans:[2],tag:"Cache"},
+  {q:"What is the 'write back' cache write policy?",opts:["All writes go to main memory immediately","Data is written only to cache, and memory is updated only when the cache line is replaced","Writes are stored in a write buffer","Data is written to both cache and memory in parallel"],ans:[1],tag:"Cache"},
+]},
+{id:'CH06',title:'Internal Memory',qs:[
+  {q:"What type of RAM stores data as charge on capacitors and requires periodic refresh?",opts:["SRAM","DRAM","ROM","PROM"],ans:[1],tag:"Memory Types"},
+  {q:"What type of RAM uses flip-flop logic-gate configurations and holds data as long as power is supplied without needing refresh?",opts:["DRAM","EPROM","SRAM","Flash memory"],ans:[2],tag:"Memory Types"},
+  {q:"Which memory type is volatile?",opts:["ROM","PROM","EPROM","RAM"],ans:[3],tag:"Memory Types"},
+  {q:"What is ROM (Read-Only Memory)?",opts:["Memory that can be read and written electrically","Memory containing a permanent pattern of data that cannot be changed; nonvolatile","Memory that requires constant power supply","Programmable memory that can be written once"],ans:[1],tag:"Memory Types"},
+  {q:"What is a PROM?",opts:["Memory that can be erased with UV light","Nonvolatile memory that may be written into only once, electrically","Memory that can be erased and rewritten electrically at byte level","Volatile read-write memory"],ans:[1],tag:"Memory Types"},
+  {q:"How is EPROM erased?",opts:["Electrically at byte level","Electrically at block level","By exposure to ultraviolet radiation","It cannot be erased"],ans:[2],tag:"Memory Types"},
+  {q:"Which is faster and used for cache memory — SRAM or DRAM?",opts:["DRAM, because it is simpler","SRAM, because it is faster","Both are equally fast","Neither — cache uses ROM"],ans:[1],tag:"Memory Types"},
+  {q:"Flash memory is erased at what level?",opts:["Bit level","Byte level","Block level","Chip level"],ans:[2],tag:"Memory Types"},
+  {q:"What is the key characteristic that makes DRAM more dense (and less expensive) than SRAM?",opts:["DRAM uses flip-flop logic which is smaller","DRAM cells are simpler (one transistor + capacitor) making them smaller","DRAM does not need refresh circuits","DRAM uses UV erasure which simplifies the design"],ans:[1],tag:"Memory Types"},
+]},
+{id:'CH07',title:'External Memory',qs:[
+  {q:"On a magnetic disk, what is the term for each concentric ring of data?",opts:["Sector","Cylinder","Track","Platter"],ans:[2],tag:"Disk"},
+  {q:"What is a 'cylinder' in a multi-platter disk system?",opts:["A single track on one platter","The set of all tracks in the same relative position on all platters","The area between two tracks","The innermost track of the disk"],ans:[1],tag:"Disk"},
+  {q:"In magnetic disk terminology, what is a 'sector'?",opts:["A full ring of data","A subdivision of a track that holds a fixed unit of data","The gap between tracks","The read/write head assembly"],ans:[1],tag:"Disk"},
+  {q:"What is Constant Angular Velocity (CAV)?",opts:["A disk that spins faster for outer tracks","A disk format where the disk rotates at a fixed speed with variable bit spacing so all tracks pass the head at the same bit rate","A disk that stores equal data density on all tracks by varying rotation speed","A technique for organizing sectors"],ans:[1],tag:"Disk"},
+  {q:"What is Multiple Zone Recording (MZR)?",opts:["A technique where tracks are divided into multiple zones to achieve approximately equal bit density per track","A method of using multiple read/write heads","A RAID technique for redundancy","A method to organize sectors into cylinders"],ans:[0],tag:"Disk"},
+  {q:"What is the main advantage of a glass substrate for magnetic disks (compared to aluminum)?",opts:["Glass is cheaper than aluminum","Glass provides improved uniformity of the magnetic film surface, fewer defects, and better stiffness","Glass allows higher data density than aluminum","Glass disks do not need read/write heads"],ans:[1],tag:"Disk"},
+  {q:"What is the 'Winchester' head mechanism?",opts:["A fixed-head disk system with one head per track","Heads used in sealed drive assemblies that are almost free of contaminants","A removable disk mechanism","A head that uses optical rather than magnetic technology"],ans:[1],tag:"Disk"},
+  {q:"What type of disk can be removed and replaced, allowing data portability between systems?",opts:["Winchester disk","Non-removable disk","Fixed-head disk","Removable disk"],ans:[3],tag:"Disk"},
+]},
+{id:'CH08',title:'Input/Output',qs:[
+  {q:"Which of the following is NOT one of the three categories of external I/O devices?",opts:["Human readable","Machine readable","Communication","Processing"],ans:[3],tag:"I/O"},
+  {q:"What are the two major functions of an I/O module?",opts:["Data storage and data processing","Interface to processor/memory via system bus, and interface to peripheral devices","Error detection and error correction","Instruction fetch and instruction decode"],ans:[1],tag:"I/O"},
+  {q:"In memory-mapped I/O, how are I/O devices addressed?",opts:["I/O devices have a completely separate address space from memory","I/O devices and memory share the same address space","Each I/O device has a dedicated processor","I/O devices are only accessible through DMA"],ans:[1],tag:"I/O"},
+  {q:"What is the main advantage of interrupt-driven I/O over programmed I/O?",opts:["Interrupt-driven I/O offers faster data transfer","The CPU does not have to wait for the I/O operation to complete — it can do other work","Interrupt-driven I/O uses less memory","Interrupt-driven I/O requires no special hardware"],ans:[1],tag:"I/O"},
+  {q:"What is Direct Memory Access (DMA)?",opts:["A technique where the CPU directly manages every byte of data transfer","A technique where a DMA controller transfers data between I/O devices and memory without CPU involvement for each byte","A special type of cache for I/O operations","A method of memory-mapped I/O"],ans:[1],tag:"I/O"},
+  {q:"What is an 'interrupt vector'?",opts:["A signal sent by an I/O device to the CPU","Part of memory that contains the addresses of interrupt handlers","A register that holds the current interrupt priority","A flag set when an interrupt occurs"],ans:[1],tag:"I/O"},
+  {q:"What is Channel I/O?",opts:["I/O controlled entirely by the CPU","I/O where an I/O channel or processor manages data transfer, freeing the CPU","I/O that uses memory-mapped addressing","I/O that requires polling by the CPU"],ans:[1],tag:"I/O"},
+  {q:"The IRA (International Reference Alphabet) represents each character using how many bits?",opts:["4 bits","6 bits","7 bits","8 bits"],ans:[2],tag:"I/O"},
+]},
+{id:'CH09',title:'Operating System Support',qs:[
+  {q:"What are the two primary objectives of an Operating System?",opts:["Speed and accuracy","Convenience and efficiency","Security and performance","Scheduling and memory management"],ans:[1],tag:"OS"},
+  {q:"Which OS service provides facilities to assist the programmer in creating programs, such as editors and debuggers?",opts:["Program execution","Program creation","Error detection","Accounting"],ans:[1],tag:"OS"},
+  {q:"What is the ISA (Instruction Set Architecture)?",opts:["The physical design of the CPU","The interface boundary between hardware and software, defining the repertoire of machine language instructions","The operating system kernel","The set of all registers in the CPU"],ans:[1],tag:"OS"},
+  {q:"What is the initial state of a process when it is admitted by the scheduler but not yet ready to execute?",opts:["Ready","Running","New","Waiting"],ans:[2],tag:"OS"},
+  {q:"Which technique involves dividing physical memory into fixed-size or variable-size blocks to allocate to processes?",opts:["Swapping","Paging","Partitioning","Translation Lookaside Buffer"],ans:[2],tag:"OS"},
+  {q:"What is a Translation Look-aside Buffer (TLB)?",opts:["A cache for frequently used data","A memory cache that stores recent translations of virtual memory to physical memory addresses","A buffer for translating machine code to assembly","A register storing the current process state"],ans:[1],tag:"OS"},
+  {q:"What does an operating system use 'swapping' for?",opts:["Exchanging data between CPU registers","Moving entire processes between main memory and disk to allow more processes to run","Switching between multiple processors","Replacing cache lines"],ans:[1],tag:"OS"},
+  {q:"Which state indicates a process is currently being executed by the processor?",opts:["Ready","New","Running","Blocked"],ans:[2],tag:"OS"},
+]},
+{id:'CH10',title:'Number Systems',qs:[
+  {q:"In the decimal system, what is the base (radix)?",opts:["2","8","10","16"],ans:[2],tag:"Number Systems"},
+  {q:"In binary, what is the value of 1001.101 in decimal?",opts:["9.5","9.625","9.75","8.625"],ans:[1],tag:"Binary"},
+  {q:"To convert a decimal integer to binary, what repeated operation is used?",opts:["Multiply by 2 and collect integer parts","Divide by 2 and collect the remainders","Divide by 16 and collect remainders","Subtract powers of 2"],ans:[1],tag:"Binary"},
+  {q:"In binary notation, what is the binary representation of decimal 13?",opts:["1101","1011","1110","1010"],ans:[0],tag:"Binary"},
+  {q:"In the hexadecimal system, what is the base (radix)?",opts:["8","12","16","32"],ans:[2],tag:"Number Systems"},
+  {q:"What is the term for the leftmost digit in a number, which carries the highest value?",opts:["Least significant digit","Most significant digit","Radix digit","Leading digit"],ans:[1],tag:"Number Systems"},
+  {q:"In a positional number system with radix r, position i has an associated weight of?",opts:["r + i","r × i","r^i","i × 10"],ans:[2],tag:"Number Systems"},
+  {q:"What is the octal number system's base?",opts:["2","8","10","16"],ans:[1],tag:"Number Systems"},
+]},
+{id:'CH11',title:'Computer Arithmetic',qs:[
+  {q:"In sign-magnitude representation, if the sign bit is 1, the number is?",opts:["Positive","Zero","Negative","Undefined"],ans:[2],tag:"Integer Representation"},
+  {q:"What is the main advantage of two's complement representation over sign-magnitude?",opts:["It can represent larger numbers","It has only one representation of zero and simplifies arithmetic operations","It uses fewer bits","It is easier for humans to read"],ans:[1],tag:"Integer Representation"},
+  {q:"How do you negate a number in two's complement?",opts:["Flip the sign bit only","Flip all bits and subtract 1","Take the Boolean complement of each bit, then add 1","Add 1 to the number"],ans:[2],tag:"Integer Representation"},
+  {q:"What is 'sign extension' in two's complement?",opts:["Adding zeros to the right","Moving the sign bit to a new leftmost position and filling with copies of the sign bit","Multiplying the number by the sign bit","Adding the sign bit to the number"],ans:[1],tag:"Integer Representation"},
+  {q:"What is the range of an n-bit two's complement integer?",opts:["-2^n to 2^n - 1","-2^(n-1) to 2^(n-1) - 1","-2^n to 2^n","-(2^n - 1) to 2^n - 1"],ans:[1],tag:"Integer Representation"},
+  {q:"In two's complement arithmetic, when does overflow occur during addition?",opts:["When the result is negative","When two numbers with the same sign are added and the result has the opposite sign","When the carry out of the MSB is 1","When the numbers being added are too large"],ans:[1],tag:"Integer Representation"},
+  {q:"What is the ALU (Arithmetic and Logic Unit)?",opts:["The part of the processor that fetches instructions","The part of the computer that actually performs arithmetic and logical operations on data","The component that manages memory allocation","The register file of the processor"],ans:[1],tag:"ALU"},
+  {q:"How many representations of zero does two's complement have?",opts:["None","One","Two","Four"],ans:[1],tag:"Integer Representation"},
+]},
+{id:'CH12',title:'Digital Logic',qs:[
+  {q:"Who proposed the basic principles of Boolean algebra in 1854?",opts:["Claude Shannon","John Von Neumann","George Boole","Alan Turing"],ans:[2],tag:"Boolean Algebra"},
+  {q:"Who suggested that Boolean algebra could be used for relay-switching circuit design?",opts:["George Boole","Alan Turing","Claude Shannon","John Von Neumann"],ans:[2],tag:"Boolean Algebra"},
+  {q:"Which logic gate produces an output of 1 only when BOTH inputs are 1?",opts:["OR","NOT","AND","XOR"],ans:[2],tag:"Logic Gates"},
+  {q:"Which logic gate produces an output of 1 when at least ONE input is 1?",opts:["AND","NOR","OR","NAND"],ans:[2],tag:"Logic Gates"},
+  {q:"What does the XOR gate produce?",opts:["1 if and only if both inputs are 1","1 if and only if exactly one of the two inputs is 1","0 if and only if both inputs are 0","1 if and only if both inputs are 0"],ans:[1],tag:"Logic Gates"},
+  {q:"Which of the following sets of gates is functionally complete (can implement any Boolean function)?",opts:["Only AND and OR","NAND alone","Only OR and XOR","Only NOR and AND"],ans:[1],tag:"Logic Gates"},
+  {q:"What is a 'combinational circuit'?",opts:["A circuit whose output depends on both current inputs and previous state","An interconnected set of gates whose output at any time is a function only of the input at that time","A circuit that stores binary values","A circuit that generates clock signals"],ans:[1],tag:"Logic Circuits"},
+  {q:"What is 'sum of products' (SOP) form in Boolean expressions?",opts:["A form where products of sum terms are combined","A form where sum terms (ORs of variables) are ANDed together","A form where AND terms are ORed together","A form using only NAND and NOR gates"],ans:[2],tag:"Boolean Algebra"},
+  {q:"DeMorgan's theorem states that NOT(A AND B) equals?",opts:["NOT A AND NOT B","NOT A OR NOT B","NOT A AND B","A OR NOT B"],ans:[1],tag:"Boolean Algebra"},
+  {q:"In Boolean algebra, which operation takes precedence when no parentheses are present?",opts:["OR over AND","AND over OR","NOT over all others, then AND, then OR","All operations have equal precedence"],ans:[2],tag:"Boolean Algebra"},
+]},
+{id:'CH13',title:'Instruction Sets: Characteristics',qs:[
+  {q:"What are the four elements of a machine instruction?",opts:["Opcode, source operand, result operand, next instruction reference","Address, data, control, status","Fetch, decode, execute, writeback","Register, memory, I/O, immediate"],ans:[0],tag:"Instructions"},
+  {q:"What does the 'operation code' (opcode) specify in a machine instruction?",opts:["The memory address of the operand","The operation to be performed (e.g., ADD, I/O)","The register to store the result","The length of the instruction"],ans:[1],tag:"Instructions"},
+  {q:"Which of the following is NOT a location where source/result operands can reside?",opts:["Processor register","Main or virtual memory","I/O device","Instruction cache"],ans:[3],tag:"Instructions"},
+  {q:"What is an 'immediate' operand?",opts:["An operand stored in a register","An operand whose value is contained in a field in the instruction itself","An operand stored in main memory","An operand provided by an I/O device"],ans:[1],tag:"Instructions"},
+  {q:"What are 'mnemonics' in instruction representation?",opts:["Binary representations of machine instructions","Abbreviations used to represent opcodes symbolically (e.g., ADD, SUB, MUL)","Special registers in the CPU","Types of addressing modes"],ans:[1],tag:"Instructions"},
+  {q:"Which type of instruction moves data into or out of registers and memory locations?",opts:["Data processing","Data storage","Data movement","Control"],ans:[1],tag:"Instructions"},
+  {q:"What are 'branch instructions'?",opts:["Instructions that move data between memory and registers","Instructions that have as one of their operands the address of the next instruction to execute — used for control flow","Instructions that perform arithmetic on data","Instructions that access I/O devices"],ans:[1],tag:"Instructions"},
+  {q:"In a 0-address instruction set (stack machine), how does the instruction reference operands?",opts:["Through explicit register numbers","Through explicit memory addresses","Implicitly from the top of the stack","Through immediate values only"],ans:[2],tag:"Instructions"},
+]},
+{id:'CH14',title:'Instruction Sets: Addressing Modes',qs:[
+  {q:"In immediate addressing, the effective address calculation is?",opts:["EA = A","EA = (A)","Operand = A (the value A is the operand itself)","EA = R"],ans:[2],tag:"Addressing"},
+  {q:"In direct addressing, what does the address field contain?",opts:["A register number","The effective address of the operand","The address of a memory location containing the operand address","An immediate value"],ans:[1],tag:"Addressing"},
+  {q:"In indirect addressing, what does the address field reference?",opts:["The operand directly","A register containing the operand","A memory word containing the full-length address of the operand","An offset to be added to the PC"],ans:[2],tag:"Addressing"},
+  {q:"In register addressing, the effective address (EA) is?",opts:["EA = A","EA = (A)","EA = R (the register contains the operand)","EA = A + (R)"],ans:[2],tag:"Addressing"},
+  {q:"In register indirect addressing, the effective address is?",opts:["EA = R","EA = (R) (the register contains the address of the operand)","EA = A + R","EA = (A) + R"],ans:[1],tag:"Addressing"},
+  {q:"In displacement addressing, the effective address is calculated as?",opts:["EA = R","EA = A","EA = A + (R)","EA = (A + R)"],ans:[2],tag:"Addressing"},
+  {q:"In PC-relative addressing (a form of displacement addressing), what is added to the address field?",opts:["The contents of a general-purpose register","The next instruction address (PC)","The contents of the stack pointer","The segment base address"],ans:[1],tag:"Addressing"},
+  {q:"What is 'autoindexing'?",opts:["Automatically sorting memory addresses","Automatically incrementing or decrementing the index register after each reference to it","Automatically predicting branch targets","Automatically caching indexed data"],ans:[1],tag:"Addressing"},
+  {q:"What is the principal advantage of immediate addressing?",opts:["Large address space","No memory reference other than the instruction fetch is required to obtain the operand","Simple calculation","Can reference any register"],ans:[1],tag:"Addressing"},
+  {q:"What is the principal disadvantage of indirect addressing?",opts:["Limited address space","Multiple memory references are required to fetch the operand","Cannot reference large values","Requires special hardware"],ans:[1],tag:"Addressing"},
+]},
+{id:'CH15',title:'Assembly Language',qs:[
+  {q:"What is an assembler?",opts:["A program that converts high-level language to machine code","A program that translates assembly language into machine code","A linker that combines object files","A loader that copies programs into memory"],ans:[1],tag:"Assembly"},
+  {q:"What is a 'linker'?",opts:["A program that translates assembly into machine code","A utility program that combines object code files from separately compiled modules into a single executable or loadable file","A program that loads executables into memory","A debugger for assembly programs"],ans:[1],tag:"Assembly"},
+  {q:"What is 'machine language'?",opts:["High-level language compiled to run on a specific machine","The binary representation of a computer program that is actually read and interpreted by the computer","Assembly language before it is assembled","The language used by the OS to communicate with hardware"],ans:[1],tag:"Assembly"},
+  {q:"What is 'object code'?",opts:["The source code of a program","The machine language representation of programming source code, created by a compiler or assembler","The executable program loaded into memory","The intermediate code generated during compilation"],ans:[1],tag:"Assembly"},
+  {q:"What is a 'compiler'?",opts:["A program that translates assembly language to machine code","A program that converts another program from source language to machine language, where each input statement does not necessarily correspond to a single machine instruction","A program that loads executables into memory","A linker for combining object files"],ans:[1],tag:"Assembly"},
+  {q:"Assembly language programming is hardware dependent because:",opts:["It can only run on one specific operating system","Each processor type has its own assembly language with specific register names, opcodes, and register lengths","It cannot access memory directly","Assembly instructions are the same across all processor types"],ans:[1],tag:"Assembly"},
+  {q:"Which of the following is an ADVANTAGE of using assembly language?",opts:["Better portability across platforms","Faster development time","Understanding compiler output for debugging; accessing instructions unavailable in HLL","Higher readability and maintainability"],ans:[2],tag:"Assembly"},
+  {q:"What does the 'label' field in an assembly language statement typically represent?",opts:["The opcode for the instruction","A symbolic name or address for that line, used as a reference target","A comment about the instruction","The operand type"],ans:[1],tag:"Assembly"},
+]},
+{id:'CH16',title:'Processor Structure & Function',qs:[
+  {q:"What are the two major components of a CPU?",opts:["RAM and ROM","ALU and Control Unit","Registers and Cache","Instruction Register and Program Counter"],ans:[1],tag:"CPU Structure"},
+  {q:"What is the role of the Control Unit (CU) in the CPU?",opts:["Performs arithmetic and logical operations","Controls the movement of data and instructions and controls the operation of the ALU","Stores data and instructions temporarily","Manages memory allocation"],ans:[1],tag:"CPU Structure"},
+  {q:"What is the Program Status Word (PSW)?",opts:["A register that holds the current instruction","A register or set of registers containing status information such as condition codes, interrupt enable flags, and supervisor mode bits","The register holding the program counter","A buffer for data transferred between CPU and memory"],ans:[1],tag:"Registers"},
+  {q:"What are 'user-visible registers'?",opts:["Registers visible only to the OS","Registers that may be referenced by machine-language programs, enabling programmers to minimize main memory references","Registers used only for status tracking","Internal ALU working registers"],ans:[1],tag:"Registers"},
+  {q:"What are 'control and status registers'?",opts:["Registers accessible to all programs","Registers used by the control unit to control processor operation and by OS programs to control program execution","Registers that hold user data","Registers that hold floating-point values"],ans:[1],tag:"Registers"},
+  {q:"In the Intel 80386–Pentium 4 microprocessor register organization, how many general-purpose registers are there?",opts:["4","6","8","16"],ans:[2],tag:"Registers"},
+  {q:"During the fetch cycle, what sequence of operations occurs?",opts:["PC → ALU → MBR → IR","PC → MAR → memory read → MBR → IR, and PC is incremented","IR → MAR → PC → MBR","MAR → MBR → IR → PC"],ans:[1],tag:"Instruction Cycle"},
+  {q:"What is the 'indirect cycle' in instruction execution?",opts:["A cycle where interrupts are processed","A cycle where operand addresses are fetched using indirect addressing","A cycle where data is written back to memory","A cycle where branch targets are resolved"],ans:[1],tag:"Instruction Cycle"},
+]},
+{id:'CH17',title:'RISC Architecture',qs:[
+  {q:"What does RISC stand for?",opts:["Reduced Instruction Set Computer","Rapid Instruction Set Computer","Restricted Instruction Set Computer","Real-time Instruction Set Computer"],ans:[0],tag:"RISC/CISC"},
+  {q:"What is the 'semantic gap' in instruction set design?",opts:["The difference in performance between RISC and CISC","The difference between the operations provided in high-level languages and those in computer architecture","The gap between instruction speed and memory speed","The difference in addressing modes between processors"],ans:[1],tag:"RISC/CISC"},
+  {q:"Compared to CISC, RISC architectures typically have:",opts:["More instructions and more addressing modes","Fewer, simpler instructions, fixed instruction sizes, and rely more on compilers","Variable-length instruction formats","More complex instruction decoding logic"],ans:[1],tag:"RISC/CISC"},
+  {q:"In RISC architecture, how does pipelining typically handle branch instructions?",opts:["By eliminating all branches","By inserting NOOP instructions (delayed branching) inserted by the compiler or assembler","By executing branch instructions in a separate pipeline","By predicting all branches as not taken"],ans:[1],tag:"RISC/CISC"},
+  {q:"What is the 'register windows' concept used in some RISC architectures?",opts:["A way of mapping virtual to physical addresses","A mechanism providing each procedure call with its own set of registers, implemented as overlapping windows in a large register file","A cache management technique","A method for handling floating-point operations"],ans:[1],tag:"RISC/CISC"},
+  {q:"In the concept of Register Windows, how many register groups are there per window?",opts:["2","3","4","8"],ans:[1],tag:"RISC/CISC"},
+  {q:"What type of instruction execution does RISC architecture favor?",opts:["Complex multi-cycle instructions that do many things","Simple, single-cycle instructions that execute in one clock cycle","Variable-cycle instructions depending on operand type","Microcode-controlled multi-cycle instructions"],ans:[1],tag:"RISC/CISC"},
+  {q:"How does RISC architecture typically access memory (compared to CISC)?",opts:["Any instruction can access memory","Only load and store instructions access memory (load/store architecture); other instructions use registers","All memory accesses are cached automatically","Memory is accessed via special I/O instructions"],ans:[1],tag:"RISC/CISC"},
+]},
+{id:'CH18',title:'Superscalar & Instruction-Level Parallelism',qs:[
+  {q:"What is a 'superscalar' processor?",opts:["A processor with a very high clock speed","A processor designed to improve performance by executing scalar instructions independently and concurrently in different pipelines","A processor with a very large instruction set","A processor with more than 64 general-purpose registers"],ans:[1],tag:"Superscalar"},
+  {q:"What is the primary goal of a superscalar architecture?",opts:["To increase clock frequency","To improve performance by executing more than one instruction per machine cycle","To reduce memory access time","To simplify the instruction set"],ans:[1],tag:"Superscalar"},
+  {q:"What is 'machine parallelism' in the context of superscalar processors?",opts:["The number of cores in a processor","Determined by the number of parallel pipelines and the speed of mechanisms the processor uses to find independent instructions","The number of threads the OS can schedule simultaneously","The degree of instruction pipelining in a single pipeline"],ans:[1],tag:"Superscalar"},
+  {q:"To enhance performance in a superscalar processor, which methods can be applied?",opts:["Increasing cache size only","Increasing clock frequency only","Duplication of resources, out-of-order issue, and register renaming — all of the mentioned","Only register renaming"],ans:[2],tag:"Superscalar"},
+  {q:"What is a 'reservation station' in a superscalar processor?",opts:["A queue for memory requests","A set of input registers that buffer operations and operands for a functional unit, relieving bottleneck at the ID stage","A table tracking branch predictions","A buffer between cache levels"],ans:[1],tag:"Superscalar"},
+  {q:"What is the 'reorder buffer' in a superscalar processor used for?",opts:["Storing branch prediction results","Holding results until it is safe to store them to memory or a register in program order","Caching frequently used instructions","Buffering data between L1 and L2 cache"],ans:[1],tag:"Superscalar"},
+  {q:"What is 'instruction-level parallelism' (ILP)?",opts:["The ability to run multiple programs simultaneously","The ability to execute multiple instructions from a single instruction stream in parallel","The number of processors in a multicore system","The maximum number of threads per core"],ans:[1],tag:"Superscalar"},
+  {q:"What is 'out-of-order execution' in a superscalar processor?",opts:["Executing instructions in reverse order","Executing instructions in an order different from the program order to avoid stalls, while preserving correct semantics","Executing multiple copies of the same instruction","Skipping instructions that cause hazards"],ans:[1],tag:"Superscalar"},
+]},
+{id:'CH19',title:'Control Unit Operation',qs:[
+  {q:"What are 'micro-operations'?",opts:["The smallest unit of data stored in memory","The functional/atomic operations of a processor — very simple steps that each accomplish very little","Special instructions for I/O control","Microcode stored in a control memory"],ans:[1],tag:"Control Unit"},
+  {q:"During the fetch cycle, which four registers are involved?",opts:["PC, IR, MAR, MBR","AC, IR, SP, PC","MAR, MBR, ALU, CU","PC, SP, BP, FLAGS"],ans:[0],tag:"Control Unit"},
+  {q:"In the fetch cycle, what is the sequence of micro-operations?",opts:["IR → PC → MAR → MBR","PC → MAR (address bus), memory read → MBR, MBR → IR, PC incremented","MAR → IR → PC → MBR","MBR → MAR → IR → PC"],ans:[1],tag:"Control Unit"},
+  {q:"What is 'microprogrammed control'?",opts:["Control implemented using standard logic gates","An approach where each machine instruction is implemented by a sequence of micro-operations defined in a control memory (microprogram)","A technique for implementing pipelining","A method for implementing cache replacement policies"],ans:[1],tag:"Control Unit"},
+  {q:"The execution of a program consists of the sequential execution of instructions, each made up of subcycles. What are the typical subcycles?",opts:["Read, write, execute, terminate","Fetch, indirect, execute, interrupt","Load, store, compute, branch","Decode, fetch, execute, writeback"],ans:[1],tag:"Control Unit"},
+  {q:"What is the purpose of the 'interrupt' subcycle in the instruction cycle?",opts:["To fetch the next instruction","To save the current process state and service a pending interrupt request","To decode the current instruction","To access indirect addressing chains"],ans:[1],tag:"Control Unit"},
+  {q:"What does MAR (Memory Address Register) connect to on the system bus?",opts:["The data bus","The control bus","The address bus","The interrupt request line"],ans:[2],tag:"Control Unit"},
+  {q:"What is the main purpose of the 'indirect' subcycle in the instruction cycle?",opts:["To process interrupts","To fetch the operand address when indirect addressing is used","To execute arithmetic operations","To write results back to memory"],ans:[1],tag:"Control Unit"},
+]},
+{id:'CH20',title:'Parallel Processing',qs:[
+  {q:"In Flynn's taxonomy, what does SIMD stand for?",opts:["Single Instruction, Multiple Data","Single Instruction, Multiple Devices","Symmetric Instruction Multiple Dispatch","Sequential Instruction Multiple Data"],ans:[0],tag:"Parallel Processing"},
+  {q:"In Flynn's taxonomy, what does MIMD stand for?",opts:["Multiple Instruction, Multiple Data","Multiple Instruction, Multiple Devices","Main Instruction Memory Database","Multiple Input Multiple Data"],ans:[0],tag:"Parallel Processing"},
+  {q:"What type of parallel processor organization do SMPs, clusters, and NUMA systems fall into?",opts:["SISD","SIMD","MISD","MIMD"],ans:[3],tag:"Parallel Processing"},
+  {q:"What is an SMP (Symmetric Multiprocessor)?",opts:["A system with asymmetric processors each handling different tasks","A standalone computer system where two or more similar processors share the same main memory and I/O, with approximately equal memory access time","A single-core processor with hyperthreading","A distributed computing cluster"],ans:[1],tag:"Parallel Processing"},
+  {q:"What is NUMA (Non-Uniform Memory Access)?",opts:["A memory technology with uniform access speed","A multiprocessor organization where memory access time to different regions of memory differs for different processors","A cache coherence protocol","A type of virtual memory management"],ans:[1],tag:"Parallel Processing"},
+  {q:"What is the main characteristic of NUMA compared to SMP?",opts:["NUMA is slower than SMP","In NUMA, each processor has local memory with faster access, but access to other processors' memory is slower","NUMA uses a shared bus while SMP uses a crossbar switch","NUMA supports fewer processors than SMP"],ans:[1],tag:"Parallel Processing"},
+  {q:"What is a 'cluster' in the context of parallel processing?",opts:["A group of cache memory banks","A collection of independent uniprocessors or SMPs interconnected to work together","A multi-threaded single processor","A NUMA memory region"],ans:[1],tag:"Parallel Processing"},
+  {q:"In Amdahl's Law for multiprocessors, if f = 0.9 (90% parallelizable) and 4 processors are used, the speedup factor is approximately?",opts:["1.8x (80% faster)","2.5x (150% faster)","3.07x (about 307% of single processor performance, i.e., speedup ≈ 3.07)","4x (400% faster)"],ans:[2],tag:"Performance"},
+]},
+{id:'CH21',title:'Multicore Computers',qs:[
+  {q:"What is 'Simultaneous Multithreading' (SMT)?",opts:["Running multiple programs on multiple cores","Replicating register banks so that multiple threads can share the use of pipeline resources in a single core","A technique for superscalar execution","A cache coherence protocol for multicore systems"],ans:[1],tag:"Multicore"},
+  {q:"What is the primary motivation for moving from single-core superscalar to multicore processors?",opts:["Single-core processors cannot use pipelines","Diminishing returns from increasing pipeline stages and parallel pipelines in a single core, combined with power density issues","Multicore is cheaper to manufacture","Software requires multicore to function"],ans:[1],tag:"Multicore"},
+  {q:"Which organizational changes in processor design exploited instruction-level parallelism (ILP), in chronological order?",opts:["Multicore, then superscalar, then pipelining","Pipelining, then superscalar, then SMT (simultaneous multithreading)","SMT, then pipelining, then superscalar","Superscalar, then pipelining, then multicore"],ans:[1],tag:"Multicore"},
+  {q:"Why does increasing the number of superscalar pipelines have diminishing returns?",opts:["More pipelines require more memory","More logic is required to manage hazards, and compiled code rarely exposes enough ILP to use more than about 6 parallel pipelines","More pipelines increase the clock frequency limit","More pipelines increase power consumption linearly"],ans:[1],tag:"Multicore"},
+  {q:"In multicore design, why is an increasing fraction of the chip area devoted to cache memory?",opts:["Cache memory is faster than logic transistors","Memory transistors are smaller and have much lower power density than logic transistors, making cache an efficient use of chip area","Cache memory is cheaper to manufacture","Cache requires no special cooling"],ans:[1],tag:"Multicore"},
+  {q:"What is the advantage of multithreading from a performance perspective?",opts:["It doubles the clock frequency","It increases utilization of processor resources by hiding the latency of cache misses and other long-latency events","It simplifies the instruction set","It eliminates the need for branch prediction"],ans:[1],tag:"Multicore"},
+  {q:"What is 'thread-level parallelism' in multicore systems?",opts:["Running multiple instructions from a single thread simultaneously","Executing multiple threads on different cores or processors simultaneously","The number of hardware threads per core","The number of instructions per pipeline stage"],ans:[1],tag:"Multicore"},
+  {q:"What limits the effectiveness of SMT (Simultaneous Multithreading)?",opts:["SMT is limited only by clock speed","The complexity of managing multiple threads over a set of pipelines limits the number of threads and pipelines that can be effectively utilized","SMT requires special operating system support that is rarely available","SMT only works with floating-point instructions"],ans:[1],tag:"Multicore"},
+]},
+];
+
+// ── STATE ──
+let pool=[], idx=0, answered={}, score=0, wrongCount=0, wrongQs=new Set();
+let multiSel=[], curChapter=null;
+const chProgress={};
+
+function init(){
+  const grid=document.getElementById('ch-grid');
+  CHAPTERS.forEach((ch,ci)=>{
+    chProgress[ch.id]={done:0,score:0};
+    const c=document.createElement('div');
+    c.className='ch-card';
+    c.id='chcard-'+ch.id;
+    c.innerHTML=`<div class="ch-num">CH ${ch.id.replace('CH','').padStart(2,'0')}</div>
+      <div class="ch-title">${ch.title}</div>
+      <div class="ch-count" id="chp-${ch.id}">${ch.qs.length} câu</div>
+      <div class="ch-done">✓</div>`;
+    c.onclick=()=>startChapter(ci);
+    grid.appendChild(c);
+  });
+}
+
+function startChapter(ci){
+  curChapter=ci;
+  pool=[...CHAPTERS[ci].qs];
+  beginQuiz(`Chương ${CHAPTERS[ci].id.replace('CH','')} — ${CHAPTERS[ci].title}`);
+}
+function startAll(){
+  curChapter=null;
+  pool=CHAPTERS.flatMap(ch=>ch.qs.map(q=>({...q,_ch:ch.id})));
+  beginQuiz('Tất cả các chương');
+}
+function startRandom(){
+  curChapter=null;
+  pool=CHAPTERS.flatMap(ch=>ch.qs.map(q=>({...q,_ch:ch.id}))).sort(()=>Math.random()-0.5);
+  beginQuiz('Ngẫu nhiên — Tất cả chương');
+}
+function startWrong(){
+  if(!wrongQs.size){alert('Chưa có câu sai nào!');return;}
+  pool=[];
+  CHAPTERS.forEach(ch=>ch.qs.forEach((q,qi)=>{
+    if(wrongQs.has(ch.id+':'+qi)) pool.push({...q,_ch:ch.id,_qi:qi});
+  }));
+  if(!pool.length){alert('Không tìm thấy câu sai!');return;}
+  beginQuiz('Ôn lại câu sai');
+}
+function retryWrong(){startWrong();}
+
+function beginQuiz(title){
+  idx=0; answered={}; score=0; wrongCount=0; multiSel=[];
+  document.getElementById('home-screen').style.display='none';
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('quiz-screen').style.display='block';
+  document.getElementById('numpad-wrap').style.display='block';
+  document.getElementById('qhdr-title').textContent=title;
+  buildNumpad();
+  renderQ();
+}
+
+function renderQ(){
+  const q=pool[idx], total=pool.length;
+  document.getElementById('prog-fill').style.width=((idx/total)*100).toFixed(1)+'%';
+  document.getElementById('qhdr-sub').textContent=`Câu ${idx+1} / ${total}`;
+  document.getElementById('sc-g').textContent=score;
+  document.getElementById('sc-r').textContent=wrongCount;
+  const isMulti=q.ans.length>1;
+  const meta=document.getElementById('q-meta');
+  meta.innerHTML=`<span class="q-badge q-num-badge">Q ${idx+1}</span>
+    <span class="q-badge q-tag-badge">${q.tag||''}</span>
+    ${q._ch?`<span class="q-badge" style="color:var(--blue);background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.2)">CH${q._ch.replace('CH','')}</span>`:''}
+    ${isMulti?`<span class="q-badge q-multi-badge">Chọn nhiều</span>`:''}`;
+  document.getElementById('q-text').textContent=q.q;
+  const opts=document.getElementById('opts');
+  opts.innerHTML='';
+  const state=answered[idx];
+  multiSel=state?[...state.chosen]:[];
+  q.opts.forEach((o,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML=`<span class="opt-key">${String.fromCharCode(65+i)}</span><span>${o}</span>`;
+    if(state){
+      b.disabled=true;
+      if(q.ans.includes(i)) b.classList.add(state.chosen.includes(i)?'correct':'reveal');
+      else if(state.chosen.includes(i)) b.classList.add('wrong');
+    } else {
+      if(!isMulti) b.onclick=()=>handleSingle(i);
+      else {
+        if(multiSel.includes(i)) b.classList.add('sel');
+        b.onclick=()=>handleMultiClick(i,b);
+      }
+    }
+    opts.appendChild(b);
+  });
+  if(isMulti&&!state){
+    const cb=document.createElement('button');
+    cb.className='btn btn-primary btn-sm';cb.style.marginTop='12px';
+    cb.textContent='Xác nhận';cb.id='confirm-btn';cb.onclick=confirmMulti;
+    opts.appendChild(cb);
+  }
+  const fb=document.getElementById('feedback');
+  if(state){
+    fb.style.display='block';
+    fb.className='feedback '+(state.ok?'ok':'no');
+    if(state.ok) fb.textContent='✓ Chính xác!';
+    else fb.textContent='✗ Đáp án đúng: '+q.ans.map(a=>String.fromCharCode(65+a)+'. '+q.opts[a]).join(' | ');
+  } else fb.style.display='none';
+  document.getElementById('btn-next').textContent=idx===pool.length-1?'Xem kết quả →':'Tiếp →';
+  document.getElementById('btn-prev').style.opacity=idx===0?'0.3':'1';
+  updateNumpad();
+  document.getElementById('q-card').style.animation='none';
+  requestAnimationFrame(()=>document.getElementById('q-card').style.animation='');
+}
+
+function handleSingle(i){
+  const q=pool[idx], ok=q.ans.includes(i);
+  answered[idx]={chosen:[i],ok};
+  if(ok) score++; else {wrongCount++;markWrong(q,idx);}
+  renderQ();
+}
+function handleMultiClick(i,btn){
+  const pos=multiSel.indexOf(i);
+  if(pos===-1) multiSel.push(i); else multiSel.splice(pos,1);
+  document.querySelectorAll('.opt').forEach((b,bi)=>{
+    if(bi<pool[idx].opts.length) b.classList.toggle('sel',multiSel.includes(bi));
+  });
+}
+function confirmMulti(){
+  if(!multiSel.length){alert('Hãy chọn ít nhất một đáp án!');return;}
+  const q=pool[idx];
+  const ok=q.ans.length===multiSel.length&&q.ans.every(a=>multiSel.includes(a));
+  answered[idx]={chosen:[...multiSel],ok};
+  if(ok) score++; else {wrongCount++;markWrong(q,idx);}
+  renderQ();
+}
+function markWrong(q,pi){
+  const chId=q._ch||(curChapter!=null?CHAPTERS[curChapter].id:'');
+  const qi=q._qi!=null?q._qi:CHAPTERS.find(c=>c.id===chId)?.qs.indexOf(q);
+  if(chId&&qi!=null) wrongQs.add(chId+':'+qi);
+}
+
+function go(dir){
+  const n=idx+dir;
+  if(n<0) return;
+  if(n>=pool.length){showResult();return;}
+  idx=n; multiSel=[]; renderQ();
+}
+
+function buildNumpad(){
+  const np=document.getElementById('numpad');
+  np.innerHTML='';
+  pool.forEach((_,i)=>{
+    const b=document.createElement('button');
+    b.className='np'; b.textContent=i+1; b.id='np-'+i;
+    b.onclick=()=>{idx=i;multiSel=[];renderQ();};
+    np.appendChild(b);
+  });
+}
+function updateNumpad(){
+  pool.forEach((_,i)=>{
+    const b=document.getElementById('np-'+i);
+    if(!b) return;
+    b.className='np';
+    if(i===idx) b.classList.add('cur');
+    else if(answered[i]) b.classList.add(answered[i].ok?'ok':'bad');
+  });
+}
+
+function showResult(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('numpad-wrap').style.display='none';
+  document.getElementById('result-screen').style.display='block';
+  const total=pool.length, done=Object.keys(answered).length;
+  const skip=total-done;
+  const pct=done>0?Math.round(score/done*100):0;
+  let grade,color;
+  if(pct>=90){grade='🏆 Xuất sắc!';color='var(--accent)';}
+  else if(pct>=80){grade='✓ Giỏi';color='var(--accent2)';}
+  else if(pct>=65){grade='~ Khá';color='var(--yellow)';}
+  else if(pct>=50){grade='~ Trung bình';color='var(--yellow)';}
+  else{grade='✗ Cần ôn thêm';color='var(--red)';}
+  document.getElementById('res-pct').textContent=pct+'%';
+  document.getElementById('res-pct').style.color=color;
+  document.getElementById('res-grade').textContent=grade;
+  document.getElementById('res-grade').style.color=color;
+  document.getElementById('res-sub').textContent=`${score} / ${done} câu đúng trên ${total} câu`;
+  document.getElementById('rs-done').textContent=done;
+  document.getElementById('rs-ok').textContent=score;
+  document.getElementById('rs-bad').textContent=wrongCount;
+  document.getElementById('rs-skip').textContent=skip;
+  // wrong review
+  const wrongs=pool.map((q,i)=>({q,i,s:answered[i]})).filter(x=>x.s&&!x.s.ok);
+  const ws=document.getElementById('wrong-section');
+  const wl=document.getElementById('wrong-list');
+  if(wrongs.length){
+    ws.style.display='block';
+    wl.innerHTML=wrongs.map(({q,s})=>{
+      const correct=q.ans.map(a=>q.opts[a]).join(' / ');
+      const chosen=s.chosen.map(a=>q.opts[a]).join(' / ');
+      return `<div class="wi"><div class="wi-q">${q.q}</div>
+        <div class="wi-tags">
+          <span class="wi-your">Bạn: ${chosen}</span>
+          <span class="wi-ans">Đúng: ${correct}</span>
+        </div></div>`;
+    }).join('');
+  } else ws.style.display='none';
+  if(wrongQs.size>0) document.getElementById('btn-retry-wrong').style.display='inline-flex';
+  // update chapter progress
+  if(curChapter!=null){
+    const ch=CHAPTERS[curChapter];
+    const el=document.getElementById('chp-'+ch.id);
+    if(el) el.textContent=`${score}/${done} đúng`;
+    const card=document.getElementById('chcard-'+ch.id);
+    if(card&&pct>=70) card.classList.add('completed');
+  }
+}
+
+function backHome(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('result-screen').style.display='none';
+  document.getElementById('numpad-wrap').style.display='none';
+  document.getElementById('home-screen').style.display='block';
+  if(wrongQs.size>0) document.getElementById('btn-retry-wrong').style.display='inline-flex';
+}
+
+init();
+</script>
+</body>
+</html>
